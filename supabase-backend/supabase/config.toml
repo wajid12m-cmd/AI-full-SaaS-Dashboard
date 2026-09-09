@@ -1,0 +1,17 @@
+# Supabase's platform gateway normally requires every request to carry a
+# valid Supabase-issued JWT or API key in the Authorization header, before
+# your function code even runs. This app doesn't use Supabase Auth at
+# all — it has its own custom JWT-in-httpOnly-cookie system (see
+# _shared/authMiddleware.ts), so a real logged-in browser request from the
+# Next.js frontend would never carry what Supabase's platform layer is
+# looking for, and would get rejected with a 401 before reaching this
+# code. Same story for Stripe's webhook calls, which carry Stripe's own
+# `stripe-signature` header instead of anything Supabase-shaped.
+#
+# verify_jwt = false hands ALL authentication responsibility to this
+# app's own code (authMiddleware.ts for regular routes, the webhook's own
+# Stripe-signature check for /billing/webhook) — which is exactly what
+# was already true under the original Express app, where Express itself
+# had no built-in auth layer either.
+[functions.api]
+verify_jwt = false

@@ -60,6 +60,10 @@ export default class Router {
     this.add("PUT", path, handlers);
   }
 
+  patch(path: string, ...handlers: (Middleware | Handler)[]): void {
+    this.add("PATCH", path, handlers);
+  }
+
   delete(path: string, ...handlers: (Middleware | Handler)[]): void {
     this.add("DELETE", path, handlers);
   }

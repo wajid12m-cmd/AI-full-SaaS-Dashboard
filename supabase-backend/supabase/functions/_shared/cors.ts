@@ -13,7 +13,7 @@ export function corsHeaders(origin: string | null): Record<string, string> {
     "Access-Control-Allow-Origin": allowOrigin,
     "Access-Control-Allow-Credentials": "true",
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-    "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+    "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
     // Tells caches/CDNs the response varies per Origin — without this a
     // shared cache could serve one user's CORS headers to another origin.
     Vary: "Origin",

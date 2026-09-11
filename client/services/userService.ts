@@ -56,3 +56,18 @@ export const updatePreferences = async (
 export const deleteOwnAccount = async (): Promise<void> => {
   await apiClient.delete("/users/me/account");
 };
+
+// Local-file profile picture upload (Settings → Profile → pencil icon).
+// Separate from updatePreferences({avatarUrl}) which just stores a URL —
+// this actually uploads bytes and gets a URL back.
+export const uploadAvatar = async (file: File): Promise<UserProfile> => {
+  const formData = new FormData();
+  formData.append("file", file);
+  // No manual Content-Type header here — axios/the browser needs to set
+  // its own "multipart/form-data; boundary=..." for FormData bodies.
+  // Setting it by hand (without a boundary) would send a header that
+  // doesn't match the actual body framing and the upload would fail to
+  // parse server-side.
+  const response = await apiClient.post("/users/me/avatar", formData);
+  return response.data.data;
+};

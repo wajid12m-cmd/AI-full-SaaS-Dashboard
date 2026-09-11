@@ -7,6 +7,7 @@ export interface AuthUser {
   role: string;
   isVerified: boolean;
   createdAt: string;
+  avatarUrl?: string | null;
 }
 
 export const registerUser = async (

@@ -7,11 +7,11 @@ import {
   FaBars,
   FaBell,
   FaCog,
-  FaUserCircle,
   FaSignOutAlt,
   FaChevronDown,
 } from "react-icons/fa";
 import ThemeToggle from "./ThemeToggle";
+import Avatar from "./Avatar";
 import { getAnalytics } from "@/services/analyticsService";
 import { useAuth } from "@/context/AuthContext";
 
@@ -178,7 +178,7 @@ export default function Navbar({
             className="flex items-center gap-2"
             aria-label="User menu"
           >
-            <FaUserCircle className="text-3xl text-blue-600 dark:text-blue-400" />
+            <Avatar name={userName} avatarUrl={user?.avatarUrl} size={32} />
             <span className="hidden md:block font-medium text-gray-700 dark:text-gray-200">
               {userName}
             </span>

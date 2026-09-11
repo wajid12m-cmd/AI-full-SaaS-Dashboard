@@ -20,7 +20,7 @@ export function useAI() {
 
     try {
       const res = await sendMessage(prompt);
-      const aiText = res?.data?.response || "Koi response nahi mila.";
+      const aiText = res?.response || "Koi response nahi mila.";
 
       setMessages((prev) => [...prev, { role: "ai", content: aiText }]);
     } catch (err) {

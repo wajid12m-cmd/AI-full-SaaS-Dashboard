@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+
 // Initials-based avatar (no file-upload backend is configured in this
 // project) — falls back to a colored circle with the user's initials, or
 // renders an image if avatarUrl is set (e.g. a Gravatar/hosted URL).
@@ -26,13 +30,21 @@ export default function Avatar({
   avatarUrl?: string | null;
   size?: number;
 }) {
-  if (avatarUrl) {
+  // Not every pasted "link to an image" is actually a direct image URL —
+  // Google Drive/Photos share links, for example, return an HTML page, not
+  // image bytes, so the <img> tag fails to render. Falling back to initials
+  // on error avoids a permanently broken-image icon.
+  const [failedToLoad, setFailedToLoad] = useState(false);
+
+  if (avatarUrl && !failedToLoad) {
     return (
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={avatarUrl}
         alt={name}
         width={size}
         height={size}
+        onError={() => setFailedToLoad(true)}
         className="rounded-full object-cover border-2 border-white dark:border-gray-800 shadow"
         style={{ width: size, height: size }}
       />

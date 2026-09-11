@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   FaUser, FaShieldAlt, FaBell, FaSlidersH, FaExclamationTriangle,
-  FaCheck, FaDesktop, FaMoon, FaSun,
+  FaCheck, FaDesktop, FaMoon, FaSun, FaCamera,
 } from "react-icons/fa";
-import { getUserById, updateUser, changePassword, updatePreferences, deleteOwnAccount, UserProfile } from "@/services/userService";
+import { getUserById, updateUser, changePassword, updatePreferences, uploadAvatar, deleteOwnAccount, UserProfile } from "@/services/userService";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { getErrorMessage } from "@/lib/errors";
@@ -47,6 +47,8 @@ export default function SettingsPage() {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarFileInputRef = useRef<HTMLInputElement>(null);
 
   // Security tab
   const [currentPassword, setCurrentPassword] = useState("");
@@ -91,6 +93,36 @@ export default function SettingsPage() {
     };
     loadProfile();
   }, [user]);
+
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-selecting the same file later
+    if (!file || !user) return;
+
+    if (!file.type.startsWith("image/")) {
+      setError("Please choose an image file.");
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      setError("Image must be under 3MB.");
+      return;
+    }
+
+    setError("");
+    setUploadingAvatar(true);
+    try {
+      const updated = await uploadAvatar(file);
+      setAvatarUrl(updated.avatarUrl || "");
+      setProfile(updated);
+      await refreshUser();
+      setProfileSaved(true);
+      setTimeout(() => setProfileSaved(false), 2000);
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to upload image."));
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -219,12 +251,31 @@ export default function SettingsPage() {
             className="bg-white dark:bg-gray-900 rounded-xl shadow-md border dark:border-gray-700 p-6 space-y-5 transition-colors"
           >
             <div className="flex items-center gap-4">
-              <Avatar name={name || "?"} avatarUrl={avatarUrl} size={72} />
+              <div className="relative shrink-0">
+                <Avatar name={name || "?"} avatarUrl={avatarUrl} size={72} />
+                <input
+                  ref={avatarFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarFileChange}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => avatarFileInputRef.current?.click()}
+                  disabled={uploadingAvatar}
+                  title="Upload a photo from this device"
+                  className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center border-2 border-white dark:border-gray-900 hover:bg-blue-700 disabled:opacity-60"
+                >
+                  <FaCamera className="text-xs" />
+                </button>
+              </div>
               <div className="flex-1">
                 <p className="font-semibold text-gray-900 dark:text-gray-50">{name}</p>
                 <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 font-medium capitalize">
                   {profile?.role === "admin" ? "Admin" : "Pro Member"}
                 </span>
+                {uploadingAvatar && <p className="text-xs text-gray-400 mt-1">Uploading...</p>}
               </div>
             </div>
 
@@ -240,7 +291,8 @@ export default function SettingsPage() {
                 className="w-full border dark:border-gray-700 rounded-lg px-4 py-2 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                Paste a link to an image. Leave blank to use your initials instead.
+                Must be a direct link to an image file (ends in .jpg/.png/etc — not a Google Drive/Photos share
+                page). Easier: use the camera icon above to upload from this device instead.
               </p>
             </div>
 

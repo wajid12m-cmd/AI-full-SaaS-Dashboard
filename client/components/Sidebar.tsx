@@ -45,11 +45,11 @@ export default function Sidebar({ isSidebarOpen }: SidebarProps) {
     <aside
       aria-label="Main navigation"
       className={`
-        w-64 h-screen sticky top-0 overflow-y-auto p-5
+        w-64 h-screen md:h-full overflow-y-auto p-5
         bg-gray-900 text-white
         dark:bg-white/[0.03] dark:backdrop-blur-xl dark:border-r dark:border-white/10
         ${isSidebarOpen ? "block fixed z-50" : "hidden"}
-        md:block md:sticky
+        md:block md:static
       `}
     >
       <h2 className="text-2xl font-bold mb-8 text-center bg-gradient-to-r from-[#5b6ef5] via-[#8b5cf6] to-[#22d3ee] bg-clip-text text-transparent">

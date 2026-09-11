@@ -389,7 +389,7 @@ export default function AIAssistantPage() {
   );
 
   return (
-    <div className="flex h-[calc(100vh-120px)] gap-4">
+    <div className="flex h-full gap-4">
       {/* Left sidebar — real, isolated conversations, ChatGPT-style */}
       <div
         className={`

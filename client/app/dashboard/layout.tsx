@@ -16,14 +16,11 @@ export default function DashboardLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
-    // Frontend and backend live on different domains (this app on
-    // Vercel/localhost, the API on Supabase) — a server-side check here
-    // could never see the httpOnly auth cookie anyway, since browsers
-    // never send domain A's cookies to domain B's server. So this
-    // client-side check (which talks to the real API domain directly,
-    // where the cookie IS visible) is the actual auth gate for this
-    // route, not just a hydration nicety. /auth/me also naturally
-    // handles the "cookie present but expired" case via its 401.
+    // middleware.ts already redirects unauthenticated requests away from
+    // /dashboard/* server-side (before this even renders) if there's no
+    // access-token cookie at all. This hydrates the actual user object —
+    // and doubles as the real check for the case where the cookie is
+    // present but expired/invalid, since /auth/me will 401 in that case.
     refreshUser();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -48,7 +45,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="relative min-h-screen bg-gray-100 dark:bg-[#05070d] transition-colors">
+    <div className="relative h-screen overflow-hidden bg-gray-100 dark:bg-[#05070d] transition-colors flex flex-col">
       {/* Ambient background blobs — fixed positioning, no parent overflow needed */}
       <div className="pointer-events-none fixed inset-0 z-0">
         <div className="dash-blob-a absolute -top-40 -left-32 h-[500px] w-[500px] rounded-full bg-[#5b6ef5] opacity-[0.08] dark:opacity-[0.12] blur-[130px]" />
@@ -56,17 +53,25 @@ export default function DashboardLayout({
         <div className="dash-blob-a absolute bottom-[-200px] left-1/3 h-[400px] w-[400px] rounded-full bg-[#8b5cf6] opacity-[0.06] dark:opacity-[0.08] blur-[130px]" style={{ animationDelay: "-4s" }} />
       </div>
 
-      <div className="relative z-10">
-        <Navbar
-          isSidebarOpen={isSidebarOpen}
-          setIsSidebarOpen={setIsSidebarOpen}
-          onLogout={handleLogout}
-        />
+      <div className="relative z-10 flex flex-col h-full min-h-0">
+        <div className="shrink-0">
+          <Navbar
+            isSidebarOpen={isSidebarOpen}
+            setIsSidebarOpen={setIsSidebarOpen}
+            onLogout={handleLogout}
+          />
+        </div>
 
-        <div className="flex">
+        {/* This row is capped to "whatever height is left under the navbar"
+            (flex-1 min-h-0) — the sidebar and the page content below each
+            get their OWN overflow-y-auto within that fixed row, instead of
+            the whole document growing/scrolling. That's what keeps the
+            navbar + sidebar visually pinned while each panel scrolls on
+            its own, independently, on hover. */}
+        <div className="flex flex-1 min-h-0">
           <Sidebar isSidebarOpen={isSidebarOpen} />
 
-          <main className="flex-1 p-4 md:p-6">{children}</main>
+          <main className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6">{children}</main>
         </div>
       </div>
     </div>
